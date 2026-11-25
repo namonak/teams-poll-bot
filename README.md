@@ -1,140 +1,175 @@
-# Team Poll Bot 🐻
+# 투표곰 (Team Poll Bot)
 
-`투표곰`은 Teams 단체 대화방에서 함께 고를 후보와 마음을 모아주는 봇이에요.
-`team-meal-bot`의 서버·카드·SQLite·Docker 배포 구조를 활용하고, 투표곰만의 생성·투표 흐름으로 동작해요.
+Teams 단체 대화방에서 후보를 올리고 함께 투표해서 결과를 모아 주는 봇입니다.
 
-## 기능
-
-- `@투표곰`만 멘션해 보내면 바로 투표 준비 카드를 펼쳐요. 다른 글자를 함께 보내면 처리할 수 없다는 안내와 사용 방법을 보여줘요.
-- 제목, 후보 2~10개, 선택 마감, 복수 선택 여부를 폼에 담아 투표를 시작해요.
-- 준비 카드를 부른 분만 투표를 시작할 수 있어요. 준비 카드는 24시간 동안 사용할 수 있어요.
-- 후보는 한 줄에 하나씩 적어요. `식당 이름 (https://naver.me/xxxx)`처럼 구경할 링크도 담을 수 있어요.
-- `투표 시작`을 누르면 준비 카드가 그대로 투표 수집 카드로 바뀌어요. 이어서 같은 카드에 참여 인원, 총 표 수, 후보별 표 수와 이름을 갱신해요.
-- 마감 전에는 다시 골라서 선택을 바꿀 수 있어요. 같은 분의 이전 응답은 새 선택으로 바꿔 담아요.
-- 한 후보 선택 또는 여러 후보 선택을 지원해요. 복수 투표의 비율은 참여자 기준이라 합계가 100%를 넘을 수 있어요.
-- 정해진 시각 또는 작성자의 버튼으로 마감해요. 마감을 비우면 작성자가 닫을 때까지 열어둬요.
-- 대화방마다 따로 저장해요. 공개 기명 투표이므로 고른 후보와 이름은 같은 대화방 구성원에게 보여요.
-
-실시간은 응답 저장 직후 기존 Teams 메시지를 갱신하는 방식이에요. 클라이언트 표시에는 잠깐의 지연이 있을 수 있어요.
-결과판 갱신이 실패해도 선택은 보존하고 30초마다 다시 시도해요. `🔄 최신 결과 보기` 버튼으로도 펼칠 수 있어요.
+- GitHub 저장소: [namonak/teams-poll-bot](https://github.com/namonak/teams-poll-bot)
+- 운영 주소: `https://poll-bot.namonak.dev`
+- 구성: TypeScript, Microsoft Agents SDK, SQLite, Docker Compose (`teams-meal-bot`과 같은 서버·카드·배포 구조)
+- 이름 규칙: GitHub 저장소만 `teams-poll-bot`이고, 로컬 폴더·컨테이너·DB·ZIP 파일은 `team-poll-bot`을 그대로 사용합니다.
 
 ## 사용 방법
 
+Teams에서 `@투표곰`을 입력한 뒤, 목록에 나오는 봇 멘션을 선택해서 보내 주세요.
+
 | 입력 | 동작 |
 | --- | --- |
-| `@투표곰` | 투표 만들기 카드를 펼쳐요. |
-| `@투표곰 도움말` | 사용 방법을 보여줘요. |
-| 그 밖의 입력 | 처리할 수 없다는 안내와 사용 방법을 보여줘요. |
+| `@투표곰` | 투표 준비 카드 표시 |
+| `@투표곰 도움말` | 사용법 안내 |
+| 그 밖의 입력 | 처리할 수 없다는 안내와 사용법 표시 |
 
-제목·후보·마감·복수 선택을 적고 `🐻 투표 시작`을 눌러야 투표가 시작돼요.
+### 투표 만들기
+
+- 준비 카드에 제목, 후보 2~10개(한 줄에 하나), 마감, 복수 선택 여부를 적고 **투표 시작**을 누릅니다.
+- 후보에는 링크를 함께 적을 수 있습니다. 예: `식당 이름 (https://naver.me/xxxx)`
+- 준비 카드를 연 사람만 투표를 시작할 수 있으며, 준비 카드는 24시간 동안 유효합니다.
+- 시작하면 준비 카드가 그 자리에서 투표 카드로 바뀝니다.
+- 시작 후에는 제목·후보·설정을 바꿀 수 없습니다. 고치려면 새 투표를 만들어 주세요.
+
+### 투표와 결과
+
+- 투표 카드에 참여 인원, 총 표 수, 후보별 표 수와 투표한 사람 이름을 바로 갱신합니다.
+- 마감 전에는 선택을 바꿀 수 있습니다. 같은 사람의 이전 응답은 새 선택으로 바뀝니다.
+- 단일 선택과 복수 선택을 지원합니다. 복수 선택의 비율은 참여자 기준이라 합계가 100%를 넘을 수 있습니다.
+- 공개 기명 투표입니다. 고른 후보와 이름이 같은 대화방 구성원에게 보입니다.
+- 대화방마다 따로 저장합니다.
+- 카드 갱신이 실패해도 선택은 보존하고 30초마다 다시 시도합니다. 카드의 **최신 결과 보기** 버튼으로도 갱신할 수 있습니다.
 
 ### 마감 시간
 
-모든 마감은 한국 시간이에요. 폼을 제출하는 순간을 기준으로 해석하고 결과판에 실제 마감 날짜를 표시해요.
+모든 마감은 한국 시간이며, 카드를 제출한 시각을 기준으로 해석합니다.
 
-| 입력 | 뜻 |
+| 입력 | 의미 |
 | --- | --- |
-| 빈 값 | 자동 마감 없이 열어둬요. |
-| `30분`, `3시간`, `2일` | 제출 시각부터 해당 기간 뒤에 닫아요. 양의 정수만 가능해요. |
-| `금요일 18시`, `금요일 18:30` | 가장 가까운 미래의 해당 요일·시각이에요. 이미 지났으면 다음 주예요. |
-| `8월 22일 18시`, `8월 22일 18:30` | 올해 해당 시각이에요. 이미 지났으면 다음 해예요. |
-| `2026-10-09 18:00` | 날짜와 시각을 정확히 지정해요. 이미 지난 값은 사용할 수 없어요. |
+| 빈 값 | 자동 마감 없음. 작성자가 버튼으로 마감 |
+| `30분`, `3시간`, `2일` | 제출 시각부터 해당 기간 뒤 마감 (양의 정수만) |
+| `금요일 18시`, `금요일 18:30` | 가장 가까운 해당 요일·시각. 이미 지났으면 다음 주 |
+| `8월 22일 18시`, `8월 22일 18:30` | 올해 해당 시각. 이미 지났으면 다음 해 |
+| `2026-10-09 18:00` | 정확한 날짜와 시각. 지난 시각은 사용할 수 없음 |
 
-마감은 365일 이내로 정해줘요. 달력에 없는 날짜는 자동으로 고치지 않고 다시 물어봐요.
-마감 시각부터 새 응답을 받지 않으며, 결과판의 마감 표시는 다음 주기 작업까지 최대 약 30초 늦을 수 있어요.
-시작 뒤에는 제목·후보·설정을 바꿀 수 없어요. 정정하려면 새 투표로 다시 모아줘요.
+- 마감은 365일 이내로만 정할 수 있습니다.
+- 달력에 없는 날짜는 자동으로 고치지 않고 다시 입력을 요청합니다.
+- 마감 시각부터 새 응답을 받지 않습니다. 카드의 마감 표시는 최대 약 30초 늦을 수 있습니다.
+
+## 로컬 개발
+
+준비물: Node 24 이상, npm, bash, zip, unzip
+
+```bash
+npm ci
+cp .env.example .env    # 투표곰 전용 앱 정보를 입력해 주세요
+npm test
+npm run typecheck
+npm run build
+node --env-file=.env --import tsx src/index.ts    # 소스로 실행
+node --env-file=.env dist/index.js                # 빌드 결과로 실행
+```
+
+- `npm start`는 `.env`를 읽지 않고 셸 환경 변수를 사용합니다.
+- 인증 필수값이 없으면 서버가 시작되지 않습니다.
+- `.env`와 SQLite 파일은 Git에 올리지 않습니다.
+
+| 환경 변수 | 값 |
+| --- | --- |
+| `MicrosoftAppId` | Azure 봇 ID (Developer Portal의 앱 ID가 아닙니다) |
+| `MicrosoftAppPassword` | 봇 클라이언트 비밀값 |
+| `MicrosoftAppTenantId` | Microsoft 365 테넌트 ID |
+| `PUBLIC_BASE_URL` | `https://poll-bot.namonak.dev` (기록용이며 서버 바인딩이나 프록시를 설정하지 않습니다) |
+| `DATABASE_PATH` | 로컬 `./data/team-poll-bot.sqlite`, 컨테이너 `/data/team-poll-bot.sqlite` |
+| `PORT` | 컨테이너 내부 `3978` |
+
+## 보안 검사
+
+`.github/workflows/security.yml`이 main 푸시, PR, 수동 실행, 매일 02:50 KST에 실행됩니다.
+
+- 의존성 검사: 테스트와 타입 검사 뒤 `npm audit --omit=dev --audit-level=moderate` 실행
+- 이미지 검사: Docker 이미지를 빌드해 Trivy(컨테이너 이미지 취약점 검사 도구) v0.76.2로 수정 가능한 HIGH·CRITICAL 취약점 검사
+- 차단 기준: 두 검사 중 하나라도 취약점을 찾으면 워크플로가 실패합니다.
+- 버전 고정: 간접 의존성 `body-parser` 2.4.0, `proxy-addr` 2.0.8을 `package.json`의 `overrides`로 고정합니다.
+- 운영 이미지: 실행에 쓰지 않는 npm과 npx를 삭제합니다. 컨테이너 안에서는 `node`만 사용해 주세요.
+- Dependabot: GitHub 취약점 알림과 자동 보안 업데이트를 켜 두었습니다.
 
 ## 서버 배포
 
-1. 저장소를 NAS의 `/volume1/docker/team-poll-bot` 같은 폴더에 내려받아요.
-2. `cp .env.example .env`를 실행하고 투표곰의 별도 Microsoft 앱 값을 채워요. 식사 봇의 비밀값이나 앱 ID를 복사하지 않아요.
+1. 저장소를 내려받고 `.env`를 설정합니다. 다른 봇의 앱 ID와 비밀값은 재사용하지 않습니다.
 
-   | 변수 | 값 |
-   | --- | --- |
-   | `MicrosoftAppId` | 투표곰 앱 등록에서 발급된 클라이언트 ID |
-   | `MicrosoftAppPassword` | 투표곰 앱 클라이언트 비밀값 |
-   | `MicrosoftAppTenantId` | Microsoft 365 테넌트 ID |
-   | `PUBLIC_BASE_URL` | 제안 주소 `https://poll-bot.namonak.dev`, 운영 주소 기록용 |
-   | `DATABASE_PATH` | 로컬 기본값 `./data/team-poll-bot.sqlite`; Compose에서는 `/data/team-poll-bot.sqlite`로 지정 |
-   | `PORT` | 컨테이너 내부 `3978` |
+   ```bash
+   git clone https://github.com/namonak/teams-poll-bot.git ~/workspace/teams-poll-bot
+   cd ~/workspace/teams-poll-bot
+   cp .env.example .env
+   chmod 600 .env
+   ```
 
-3. DNS·HTTPS 인증서를 준비하고 프록시에서 `/api/messages`와 `/healthz`를 `127.0.0.1:3979`로 전달해요.
-4. `docker compose up -d --build`를 실행해요. 구형 Synology 환경은 `docker-compose up -d --build`를 사용해요.
-5. `curl https://poll-bot.namonak.dev/healthz`가 `{"ok":true}`를 반환하는지 확인해요.
+2. Caddyfile에 아래 설정을 추가하고, `caddy validate`로 검사한 뒤 `caddy reload`로 재시작 없이 반영합니다. HTTPS 인증서는 Caddy가 자동으로 발급하고 갱신합니다.
 
-외부 주소는 제안값이에요. 실제 도메인을 바꾸면 `.env`의 운영 주소, HTTPS 프록시, 봇 endpoint,
-`appPackage/manifest.json`의 `validDomains`도 함께 맞춰줘요.
-인증 설정이 빠지면 서버 시작을 거부해요. `.env`와 SQLite 파일은 Git에 넣지 않아요.
+   ```caddyfile
+   poll-bot.namonak.dev {
+       reverse_proxy 127.0.0.1:3979
+   }
+   ```
 
-Nginx 프록시 예시는 아래와 같아요.
+3. `docker compose up -d --build`로 실행합니다. 구형 환경에서는 `docker-compose`를 사용합니다.
+4. `curl https://poll-bot.namonak.dev/healthz`가 `{"ok":true}`를 반환하는지 확인합니다.
 
-```nginx
-location / {
-  proxy_pass http://127.0.0.1:3979;
-  proxy_set_header Host $host;
-  proxy_set_header X-Forwarded-Proto $scheme;
-}
-```
+운영 기준
 
-식사 봇은 호스트 포트 3978, 투표곰은 3979를 사용하므로 함께 실행할 수 있어요.
-투표곰 DB는 `poll-data` 볼륨에 보관해 컨테이너 교체·재시작 후에도 선택을 유지해요.
-단일 프로세스로 실행하며 같은 DB에 투표곰 컨테이너 여러 개를 연결하지 않아요.
+- 호스트 포트: 3979 (식사 봇 3978, 쿠웨이트박 3980과 겹치지 않음)
+- 자동 실행: Compose의 `restart: unless-stopped`로 서버를 재부팅해도 다시 실행됩니다. systemd로 관리하려면 `deploy/team-poll-bot.service`의 WorkingDirectory를 서버 경로로 바꿔서 사용해 주세요.
+- 데이터: `poll-data` 볼륨에 보관합니다. `docker compose down -v`는 볼륨을 삭제하므로 사용하지 않습니다.
+- 실행 단위: 컨테이너 하나로만 실행합니다. 같은 DB를 여러 봇 인스턴스에 연결하지 않습니다.
+- 도메인 변경 시 함께 바꿀 항목: `.env`, DNS·Caddy, Azure 봇 메시지 엔드포인트, `appPackage/manifest.json`의 `validDomains`
 
-systemd로 자동 실행하려면 `deploy/team-poll-bot.service`의 `WorkingDirectory`와 Docker 실행 경로를 서버에 맞게 바꿔줘요.
+코드 업데이트 반영
 
 ```bash
-sudo cp deploy/team-poll-bot.service /etc/systemd/system/
-sudo systemctl daemon-reload
-sudo systemctl enable --now team-poll-bot
-sudo systemctl status team-poll-bot
+cd ~/workspace/teams-poll-bot
+git pull --ff-only
+docker compose up -d --build
 ```
 
-NAS의 Compose 명령이 `docker-compose`라면 서비스의 `ExecStart`·`ExecStop`도 맞춰줘요.
+서버 코드만 바뀐 경우에는 Teams 앱을 다시 설치하지 않아도 됩니다.
 
-## Teams 등록
+## Teams 앱 등록과 설치
 
-Teams Developer Portal과 Azure Bot 등록에서 투표곰 앱을 준비하고 Teams 채널을 연결해요.
-봇 메시징 endpoint는 `https://poll-bot.namonak.dev/api/messages`예요.
-앱 등록의 ID·비밀값·테넌트는 서버 `.env` 값과 같아야 해요.
+- 등록: Teams Developer Portal과 Azure Bot에서 투표곰 앱을 등록하고 Teams 채널을 연결합니다.
+- 메시지 엔드포인트: `https://poll-bot.namonak.dev/api/messages`
+- 서버 설정과 일치 필요: 봇 ID, 비밀값, 테넌트
+- 조직에서 사용자 지정 앱 업로드를 허용해야 합니다.
 
-프로젝트 최상단에서 패키지를 만들어요. `bash`, `zip`, `unzip`을 사용할 수 있는 환경이 필요해요.
+ZIP 만들기(프로젝트 최상단에서 실행)
 
 ```bash
-cd /volume1/docker/team-poll-bot
-git pull origin main
 bash scripts/package-teams-app.sh
 ```
 
-`.env`의 `MicrosoftAppId` 또는 같은 이름의 환경 변수로 manifest를 채워요. 앱 ID는 UUID 형식이어야 해요.
-결과는 한국 시간 기준 `dist/team-poll-bot-YYYYMMDD-HHMMSS.zip`이에요.
-ZIP에는 `manifest.json`, `color.png`, `outline.png`만 들어가며 비밀값은 포함되지 않아요.
+- 출력 파일: `dist/team-poll-bot-YYYYMMDD-HHMMSS.zip` (한국 시간 기준)
+- 포함 파일: `manifest.json`, `color.png`(192×192), `outline.png`(32×32, 투명 배경). 비밀값은 들어가지 않습니다.
+- 앱 ID: 환경 변수나 `.env`의 `MicrosoftAppId`(UUID 형식)로 manifest를 채웁니다.
+- 현재 manifest 버전: 1.0.2
 
-생성한 ZIP을 Teams에 사용자 지정 앱으로 업로드하고 대상 단체 대화방에 추가해요.
-조직에서 사용자 지정 앱 업로드를 허용해야 해요. 앱 이름·아이콘·manifest를 바꾸면 `version`을 올리고 새 ZIP으로 앱을 업데이트해줘요.
-앱 설치 후 `@투표곰`을 실제 멘션으로 선택하고 전송하면 준비 카드를 펼쳐요.
+설치와 업데이트
 
-컬러 아이콘은 제공된 곰을 참고해 ImageGen으로 제작했어요.
-프롬프트는 ‘오른쪽 작은 곰의 윙크·파란 후드·체크 투표판을 유지하고, 파란 정사각형 배경의 Teams 아이콘으로 제작’이었어요.
-외곽선 아이콘은 작은 크기의 식별성을 위해 흰색 곰 얼굴·체크를 단순한 도형으로 그렸어요.
-완성 파일은 `appPackage/color.png` 192×192, `appPackage/outline.png` 32×32이며 원본은 요청대로 삭제했어요.
+- 처음 설치: Teams 앱 관리 화면에서 **사용자 지정 앱 업로드**로 ZIP을 올린 뒤 단체 대화방에 추가해 주세요.
+- 업데이트: 이름·아이콘·manifest를 바꾸면 manifest의 `version`을 올리고, 새 ZIP을 같은 방법으로 업로드해 주세요. 앱을 삭제하고 다시 설치할 필요는 없습니다.
+- 주의: ZIP으로 설치한 앱은 Developer Portal에서 버전을 올려도 업데이트되지 않습니다.
 
-## 운영과 복구
+## 장애 확인과 복구
 
-### 결과판 갱신이 늦을 때
+```bash
+docker compose logs --tail=100 bot
+```
 
-`docker compose logs --tail=100 bot`으로 로그를 확인해요.
-`투표 카드 갱신 재시도`는 응답이 저장됐지만 Teams 카드 갱신이 실패했다는 뜻이에요.
-30초마다 다시 시도하고, 재시작 후에도 아직 반영하지 못한 버전을 이어서 처리해요.
+| 로그 | 의미 |
+| --- | --- |
+| `투표 카드 갱신 재시도` | 응답은 저장했지만 카드 갱신에 실패한 상태. 30초마다 다시 시도하며, 재시작 후에도 이어서 처리합니다. |
+| `투표 게시 확인 필요` | 게시 응답이 유실되었을 수 있는 상태. 카드 중복을 막기 위해 자동 재게시하지 않습니다. |
 
-### 투표 게시 여부가 불확실할 때
+게시 여부가 불확실할 때
 
-네트워크 응답을 잃거나 게시 직후 프로세스가 종료되면 중복 결과판을 막기 위해 자동 재게시하지 않아요.
-사용자에게 안내한 투표 ID와 로그의 `투표 게시 확인 필요`를 확인해요.
-HTTP 400·401·403·404·413·422처럼 명확한 게시 거절이면 원인을 해결한 뒤 원래 폼을 다시 제출할 수 있어요.
+- HTTP 400·401·403·404·413·422처럼 게시가 명확히 거절된 경우: 원인을 해결한 뒤 원래 준비 카드를 다시 제출해 주세요.
+- 그 밖의 경우: 봇을 멈추고 대화방에 실제로 게시되었는지 먼저 확인해 주세요. 확인 없이 게시 상태를 되돌리지 않습니다.
+- 메시지 ID 확인: Teams 메시지의 **링크 복사** 주소에서 `/l/message/대화방/메시지ID` 부분을 확인합니다.
 
-그 밖의 불확실한 경우에는 먼저 봇을 멈추고 실제 대화방 게시 여부를 확인해요.
-게시가 확인됐다면 해당 메시지 ID를 연결해 복구할 수 있어요. 아래 두 인수를 실제 값으로 바꿔줘요.
-메시지 ID는 Teams의 ‘링크 복사’ URL에서 `/l/message/대화방/메시지ID` 부분을 확인하거나 운영 도구에서 조회해요.
+게시가 확인된 경우에는 아래 명령으로 메시지 ID를 연결합니다. 두 인수를 실제 값으로 바꿔서 실행해 주세요.
 
 ```bash
 docker compose stop bot
@@ -150,12 +185,11 @@ db.close();
 docker compose start bot
 ```
 
-게시가 없음을 확실히 확인했다면, 같은 방식으로 `publish_state`를 `ready`로 되돌리고 폼을 다시 제출해요.
-확인 없이 게시 상태를 되돌리지 않아요. 오래된 폼은 새 투표로 다시 준비해줘요.
+게시되지 않은 것이 확실하면 같은 방식으로 `publish_state`를 `ready`로 되돌린 뒤 준비 카드를 다시 제출해 주세요. 오래된 준비 카드는 새 투표로 다시 만들어 주세요.
 
-### 백업
+## 백업
 
-봇을 멈춘 뒤 `/data/team-poll-bot.sqlite`를 복사하고 다시 시작해요.
+- DB에는 투표 내용과 투표한 사람 이름이 들어 있습니다. 데이터와 백업 파일의 접근 권한을 제한해 주세요.
 
 ```bash
 mkdir -p backups
@@ -164,33 +198,19 @@ docker cp team-poll-bot:/data/team-poll-bot.sqlite "backups/team-poll-bot-$(date
 docker compose start bot
 ```
 
-복원은 봇을 멈추고 기존 DB를 별도로 보관한 뒤 진행해요. `docker compose down -v`는 응답 볼륨을 삭제하므로 사용하지 않아요.
-DB에는 투표와 이름이 있으니 백업 접근 권한도 관리해줘요.
+복원할 때는 봇을 멈추고 현재 DB를 따로 보관한 뒤 백업 파일을 복사해 주세요.
 
-## 로컬 개발과 확인 목록
+## Teams 실사용 확인 항목
 
-Node 24 이상이 필요해요.
+두 계정으로 아래 항목을 확인해 주세요. 자동 테스트는 실제 Teams 설치, 화면 표시, DNS, 인증서를 확인하지 않습니다.
 
-```bash
-npm ci
-npm test
-npm run typecheck
-npm run build
-cp .env.example .env
-# .env에 투표곰 앱 값을 채운 뒤
-node --env-file=.env --import tsx src/index.ts
-```
+- `@투표곰`으로 준비 카드가, 다른 입력으로 안내와 사용법이 표시되는지
+- 다른 사람이 준비 카드의 시작을 누르면 거부되는지
+- 단일·복수 투표에서 선택, 응답 변경, 집계·이름·링크 표시
+- 다른 사람의 수동 마감 거부, 작성자 마감과 자동 마감 후 응답 거부
+- 데스크톱·모바일의 줄바꿈과 카드 갱신, 서버 재시작 후 결과 유지
 
-Docker는 `.env`를 자동으로 주입하지만 `npm start`는 셸에 이미 설정된 환경 변수를 사용해요.
-빌드 결과만 실행하려면 `node --env-file=.env dist/index.js`를 사용해요.
+## 참고 문서
 
-실제 Teams에서는 아래 흐름을 두 계정으로 확인해줘요.
-
-1. HTTPS 헬스 체크가 성공하고 앱을 단체 대화방에 설치해요.
-2. `@투표곰` 전송 후 준비 카드가, `@투표곰 아무말` 전송 후 안내와 사용 방법이 펼쳐지는지 확인해요.
-3. 다른 사용자가 준비 카드의 시작을 누르면 거부되는지 확인해요.
-4. 단일·복수 투표에서 선택, 응답 변경, 집계·이름·링크를 확인해요.
-5. 다른 사용자의 수동 마감이 거부되고 작성자 마감·자동 마감 후에는 응답이 거부되는지 확인해요.
-6. 데스크톱·모바일의 줄바꿈과 카드 갱신을 확인하고, 서버 재시작 후에도 결과가 남는지 확인해요.
-
-자동 테스트와 로컬/Docker 검증은 실제 Teams 테넌트의 설치·렌더링·DNS·인증서 검증을 대신하지 않아요.
+- [설계 문서](docs/superpowers/specs/2026-10-05-team-poll-bot-design.md)
+- [구현 계획](docs/superpowers/plans/2026-10-07-team-poll-bot.md)
